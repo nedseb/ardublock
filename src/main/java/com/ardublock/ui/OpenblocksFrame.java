@@ -25,13 +25,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import com.ardublock.core.Context;
-import com.ardublock.ui.listener.ArdublockWorkspaceListener;
-import com.ardublock.ui.listener.GenerateCodeButtonListener;
-import com.ardublock.ui.listener.NewButtonListener;
-import com.ardublock.ui.listener.OpenButtonListener;
-import com.ardublock.ui.listener.OpenblocksFrameListener;
-import com.ardublock.ui.listener.SaveAsButtonListener;
-import com.ardublock.ui.listener.SaveButtonListener;
+import com.ardublock.ui.listener.*;
 
 import edu.mit.blocks.controller.WorkspaceController;
 import edu.mit.blocks.workspace.Workspace;
@@ -109,6 +103,8 @@ public class OpenblocksFrame extends JFrame
 		saveAsButton.addActionListener(new SaveAsButtonListener(this));
 		JButton openButton = new JButton(uiMessageBundle.getString("ardublock.ui.load"));
 		openButton.addActionListener(new OpenButtonListener(this));
+		JButton importButton = new JButton(uiMessageBundle.getString("ardublock.ui.import"));
+		importButton.addActionListener(new ImportButtonListener(this));
 		JButton generateButton = new JButton(uiMessageBundle.getString("ardublock.ui.upload"));
 		generateButton.addActionListener(new GenerateCodeButtonListener(this, context));
 		JButton serialMonitorButton = new JButton(uiMessageBundle.getString("ardublock.ui.serialMonitor"));
@@ -148,6 +144,7 @@ public class OpenblocksFrame extends JFrame
 		buttons.add(saveButton);
 		buttons.add(saveAsButton);
 		buttons.add(openButton);
+		buttons.add(importButton);
 		buttons.add(generateButton);
 		buttons.add(serialMonitorButton);
 
@@ -203,7 +200,61 @@ public class OpenblocksFrame extends JFrame
 		}
 		this.setTitle(makeFrameTitle());
 	}
-	
+
+	public void doImportArduBlockFile() {
+		if (context.isWorkspaceChanged())
+		{
+			int optionValue = JOptionPane.showOptionDialog(this, uiMessageBundle.getString("message.content.open_unsaved"), uiMessageBundle.getString("message.title.question"), JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, JOptionPane.YES_OPTION);
+			if (optionValue == JOptionPane.YES_OPTION)
+			{
+				doSaveArduBlockFile();
+				this.importFile();
+			}
+			else
+			{
+				if (optionValue == JOptionPane.NO_OPTION)
+				{
+					this.importFile();
+				}
+			}
+		}
+		else
+		{
+			this.importFile();
+		}
+		this.setTitle(makeFrameTitle());
+	}
+
+	private void importFile()
+	{
+		int result = fileChooser.showOpenDialog(this);
+		if (result == JFileChooser.APPROVE_OPTION)
+		{
+			File savedFile = fileChooser.getSelectedFile();
+			if (!savedFile.exists())
+			{
+				JOptionPane.showOptionDialog(this, uiMessageBundle.getString("message.file_not_found"), uiMessageBundle.getString("message.title.error"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, null, JOptionPane.OK_OPTION);
+				return ;
+			}
+
+			try
+			{
+				this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				context.importArduBlockFile(savedFile);
+				context.setWorkspaceChanged(false);
+			}
+			catch (IOException e)
+			{
+				JOptionPane.showOptionDialog(this, uiMessageBundle.getString("message.file_not_found"), uiMessageBundle.getString("message.title.error"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, null, JOptionPane.OK_OPTION);
+				e.printStackTrace();
+			}
+			finally
+			{
+				this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			}
+		}
+	}
+
 	private void loadFile()
 	{
 		int result = fileChooser.showOpenDialog(this);

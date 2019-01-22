@@ -83,7 +83,12 @@ public class ArduBlockTool implements Tool, OpenblocksFrameListener
 	{
 		
 	}
-	
+
+	@Override
+	public void didImport() {
+
+	}
+
 	public void didNew()
 	{
 		

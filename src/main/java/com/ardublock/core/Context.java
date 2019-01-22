@@ -15,6 +15,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import edu.mit.blocks.workspace.WorkspaceWidget;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
@@ -54,7 +55,7 @@ public class Context
 	final public static String APP_NAME = "ArduBlock";
 	
 	private Editor editor;
-	
+
 	public enum OsType
 	{
 		LINUX,
@@ -286,6 +287,17 @@ public class Context
 			didLoad();
 		}
 	}
+
+	public void importArduBlockFile(File savedFile) throws IOException {
+		if (savedFile != null)
+		{
+			saveFilePath = savedFile.getAbsolutePath();
+			saveFileName = savedFile.getName();
+			//List<WorkspaceWidget> widgets = workspaceController.resetBeforeImportWorkspace();
+			workspaceController.importProjectFromPath(saveFilePath);
+			didImport();
+		}
+	}
 	
 	public void setEditor(Editor e) {
 		editor = e;
@@ -328,7 +340,15 @@ public class Context
 			ofl.didSave();
 		}
 	}
-	
+
+	public void didImport()
+	{
+		for (OpenblocksFrameListener ofl : ofls)
+		{
+			ofl.didImport();
+		}
+	}
+
 	public void didLoad()
 	{
 		for (OpenblocksFrameListener ofl : ofls)
